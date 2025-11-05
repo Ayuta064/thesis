@@ -1,0 +1,26 @@
+{
+    "name": "Timer",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:56255bd5d851a6243b63cb370cfc40b1",
+        "GUID:d59347cf3d47ac148925927618efb1b5",
+        "GUID:9c03a1b3ee9b18b4ba7c7360a76f548d",
+        "GUID:549a4c1827caebb409bfea754d58bf75",
+        "GUID:eb8403d5bc34ae149b14825a03a7f9c3",
+        "GUID:ba171b3dd2a51234ab864770f99741a5",
+        "GUID:92703082f92b41ba80f0d6912de66115",
+        "GUID:a9420e37d7990b54abdef6688edbe313",
+        "GUID:4847341ff46394e83bb78fbd0652937e",
+        "GUID:3b76ab8242cc35d479edf0a949d56d59"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
