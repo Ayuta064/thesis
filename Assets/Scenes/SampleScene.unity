@@ -153,6 +153,85 @@ MonoBehaviour:
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 3
   flashInterval: 0.2
+--- !u!1 &260175442
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 260175445}
+  - component: {fileID: 260175444}
+  - component: {fileID: 260175443}
+  m_Layer: 0
+  m_Name: Timer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &260175443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 260175442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a8e5e857dcf3a84cbd29548d8c79aa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateLinkedTransform: 0
+  moveLerpTime: 0.1
+  rotateLerpTime: 0.1
+  scaleLerpTime: 0
+  maintainScaleOnInitialization: 1
+  smoothing: 1
+  lifetime: 0
+  orientationType: 1
+  localOffset: {x: 0.035, y: 0.28, z: 0.8}
+  worldOffset: {x: 0, y: 0, z: 0}
+  useAngleStepping: 0
+  tetherAngleSteps: 6
+--- !u!114 &260175444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 260175442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3986155c7a728454f8bbbabd2e274601, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftInteractor: {fileID: 0}
+  rightInteractor: {fileID: 0}
+  trackedTargetType: 0
+  trackedHandedness: 3
+  trackedHandJoint: 0
+  transformOverride: {fileID: 0}
+  additionalOffset: {x: 0, y: 0, z: 0}
+  additionalRotation: {x: 0, y: 0, z: 0}
+  updateSolvers: 1
+--- !u!4 &260175445
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 260175442}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.515, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1166011675}
+  m_Father: {fileID: 0}
+  m_RootOrder: 17
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &265375922 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
@@ -1395,9 +1474,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1017940583}
   - component: {fileID: 1017940582}
-  - component: {fileID: 1017940581}
   - component: {fileID: 1017940585}
   - component: {fileID: 1017940584}
+  - component: {fileID: 1017940586}
   m_Layer: 0
   m_Name: Timer group
   m_TagString: Untagged
@@ -1405,45 +1484,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1017940581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1017940580}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07606d041cd57684c85e7122ad8e3897, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  updateLinkedTransform: 0
-  moveLerpTime: 0.01
-  rotateLerpTime: 0.01
-  scaleLerpTime: 0
-  maintainScaleOnInitialization: 1
-  smoothing: 1
-  lifetime: 0
-  orientationType: 4
-  faceTrackedObjectWhileClamped: 1
-  faceUserDefinedTargetTransform: 0
-  targetToFace: {fileID: 0}
-  pivotAxis: 7
-  minDistance: 0.3
-  maxDistance: 0.9
-  defaultDistance: 0.7
-  maxViewHorizontalDegrees: 360
-  maxViewVerticalDegrees: 180
-  reorientWhenOutsideParameters: 1
-  orientToControllerDeadZoneDegrees: 60
-  ignoreAngleClamp: 0
-  ignoreDistanceClamp: 0
-  ignoreReferencePitchAndRoll: 0
-  pitchOffset: 0
-  verticalMaxDistance: 0
-  angularClampMode: 0
-  tetherAngleSteps: 6
-  boundsScaler: 1
 --- !u!114 &1017940582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1451,7 +1491,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1017940580}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3986155c7a728454f8bbbabd2e274601, type: 3}
   m_Name: 
@@ -1473,12 +1513,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1017940580}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 7}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1365933573}
-  - {fileID: 1166011675}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1726,6 +1765,30 @@ MonoBehaviour:
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 3
   flashInterval: 0.2
+--- !u!114 &1017940586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017940580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a8e5e857dcf3a84cbd29548d8c79aa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateLinkedTransform: 0
+  moveLerpTime: 0.1
+  rotateLerpTime: 0.1
+  scaleLerpTime: 0
+  maintainScaleOnInitialization: 1
+  smoothing: 1
+  lifetime: 0
+  orientationType: 1
+  localOffset: {x: 0, y: -0.05, z: 0.2}
+  worldOffset: {x: 0, y: 0, z: 0}
+  useAngleStepping: 0
+  tetherAngleSteps: 6
 --- !u!1001 &1101340433
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1940,7 +2003,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.084905684, g: 0.0076094694, b: 0.0076094694, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1957,8 +2020,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 20
+  m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2016,8 +2079,8 @@ RectTransform:
   m_GameObject: {fileID: 1165194945}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.8, y: 1.8, z: 1.8}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1511394046}
   m_RootOrder: 2
@@ -2519,15 +2582,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1960850291408215591, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.0612
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1960850291408215591, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.3497
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1960850291408215591, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.142
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1960850291408215591, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3188,7 +3251,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 1017940583}
+    m_TransformParent: {fileID: 260175445}
     m_Modifications:
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_Pivot.x
@@ -3200,7 +3263,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_AnchorMax.x
@@ -3228,7 +3291,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.78683
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_LocalScale.y
@@ -3268,11 +3331,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.078
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.211
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -3286,13 +3349,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108627, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_fontSize
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_fontColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0.9575472
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0.9575472
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_fontSizeBase
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294243583
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108630, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_Name
