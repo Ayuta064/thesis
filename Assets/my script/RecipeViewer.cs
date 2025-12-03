@@ -1,29 +1,36 @@
 using UnityEngine;
-using TMPro; // TextMeshPro (UI用)
+using TMPro; // Canvas上のテキスト(TextMeshProUGUI)用
 using Firebase.Firestore;
 using Firebase.Extensions;
 using System.Collections.Generic;
 
-// 1. データ構造の定義（Firestoreの中身と合わせる）
+// データ構造の定義（Firestoreのフィールド名に対応）
 public class StepData
 {
-    public string instruction;
-    public string spiceID;
-    public string video;
+    public string Instruction;
+    public string SpiceID;
+    public string VideoUrl;
 }
 
 public class RecipeViewer : MonoBehaviour
 {
     [Header("UI References")]
     [Tooltip("レシピの工程を表示するCanvas上のテキスト")]
-    public TextMeshProUGUI instructionText; // 🚨 Canvas用は 'UGUI' がつきます
+    public TextMeshProUGUI instructionText;
     
     [Tooltip("現在のステップ数 (例: 1/5)")]
     public TextMeshProUGUI counterText;
 
+    [Header("Video Settings")]
+    [Tooltip("「動画を見る」ボタンのGameObject（Canvas内のボタン）")]
+    public GameObject watchVideoButton; 
+    
+    [Tooltip("シーンに配置した動画ポップアップのコントローラー")]
+    public VideoPopupController videoPopup; 
+
     [Header("Database Settings")]
     [Tooltip("取得したいレシピのドキュメントID (例: omlet_cheese)")]
-    public string targetRecipeID = "tz5vBFXPEGdxJaAvZPYG";
+    public string targetRecipeID = "omlet_cheese";
 
     // 内部データ
     private List<StepData> steps = new List<StepData>();
@@ -32,28 +39,20 @@ public class RecipeViewer : MonoBehaviour
 
     void Start()
     {
-        instructionText.text = "Firebase初期化中...";
+        // 初期化表示
+        instructionText.text = "レシピを読み込み中...";
+        if (counterText != null) counterText.text = "-- / --";
+        
+        // 動画ボタンは最初は隠しておく
+        if (watchVideoButton != null) watchVideoButton.SetActive(false);
 
-        // Firebaseの依存関係をチェック
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
-            var dependencyStatus = task.Result;
-            if (dependencyStatus == Firebase.DependencyStatus.Available)
-            {
-                // 初期化成功！ここで初めてデータベースに接続
-                db = FirebaseFirestore.DefaultInstance;
-                instructionText.text = "レシピを読み込み中...";
-                LoadRecipeFromFirestore();
-            }
-            else
-            {
-                Debug.LogError($"Firebaseの初期化に失敗: {dependencyStatus}");
-                instructionText.text = "初期化エラー";
-            }
-        });
+        // Firestoreの初期化とロード
+        db = FirebaseFirestore.DefaultInstance;
+        LoadRecipeFromFirestore();
     }
 
     // ---------------------------------------------------------
-    // 2. Firestoreからデータを取得する処理
+    // 1. Firestoreからデータを取得・解析
     // ---------------------------------------------------------
     private void LoadRecipeFromFirestore()
     {
@@ -62,24 +61,28 @@ public class RecipeViewer : MonoBehaviour
             if (task.IsFaulted)
             {
                 instructionText.text = "読み込みエラー";
-                Debug.LogError(task.Exception);
+                Debug.LogError($"Firestore Error: {task.Exception}");
                 return;
             }
 
             DocumentSnapshot snapshot = task.Result;
             if (snapshot.Exists)
             {
-                // Firestoreの "steps" 配列を取得
                 Dictionary<string, object> data = snapshot.ToDictionary();
                 
+                // "steps" 配列があるか確認
                 if (data.ContainsKey("steps"))
                 {
                     List<object> stepList = data["steps"] as List<object>;
-                    ParseSteps(stepList); // データをC#リストに変換
+                    ParseSteps(stepList);
                     
-                    // 最初のステップを表示
+                    // ロード完了後、最初のステップを表示
                     currentIndex = 0;
                     UpdateDisplay();
+                }
+                else
+                {
+                    instructionText.text = "手順データが見つかりません";
                 }
             }
             else
@@ -89,29 +92,32 @@ public class RecipeViewer : MonoBehaviour
         });
     }
 
-    // Firestoreのデータを使いやすい形に変換する
+    // 取得したデータをC#のリストに変換する
     private void ParseSteps(List<object> stepList)
     {
         steps.Clear();
         foreach (var item in stepList)
         {
-            // 各ステップは Map (Dictionary) として保存されている
+            // FirestoreのMapはDictionaryとして扱われる
             var map = item as Dictionary<string, object>;
             
-            StepData newStep = new StepData();
-            newStep.instruction = map.ContainsKey("instruction") ? map["instruction"].ToString() : "";
-            newStep.spiceID = map.ContainsKey("spiceID") ? map["spiceID"].ToString() : "";
-            newStep.video = map.ContainsKey("video") ? map["video"].ToString() : "";
-            
-            steps.Add(newStep);
+            if (map != null)
+            {
+                StepData newStep = new StepData();
+                // 辞書から値を取り出し、なければ空文字を入れる安全策
+                newStep.Instruction = map.ContainsKey("instruction") ? map["instruction"].ToString() : "";
+                newStep.SpiceID = map.ContainsKey("spiceID") ? map["spiceID"].ToString() : "";
+                newStep.VideoUrl = map.ContainsKey("video") ? map["video"].ToString() : "";
+                
+                steps.Add(newStep);
+            }
         }
     }
 
     // ---------------------------------------------------------
-    // 3. ボタン操作と表示更新
+    // 2. ボタン操作（Next / Previous / Watch Video）
     // ---------------------------------------------------------
 
-    // 「次へ」ボタンから呼ぶ
     public void NextStep()
     {
         if (steps.Count == 0) return;
@@ -123,7 +129,6 @@ public class RecipeViewer : MonoBehaviour
         }
     }
 
-    // 「前へ」ボタンから呼ぶ
     public void PreviousStep()
     {
         if (steps.Count == 0) return;
@@ -135,23 +140,49 @@ public class RecipeViewer : MonoBehaviour
         }
     }
 
-    // 画面のテキストを更新する
+    // 「動画を見る」ボタンが押されたときに呼ばれる
+    public void OnWatchVideoClicked()
+    {
+        if (steps.Count == 0) return;
+
+        StepData currentStep = steps[currentIndex];
+        
+        // URLが有効ならポップアップを開く
+        if (!string.IsNullOrEmpty(currentStep.VideoUrl) && videoPopup != null)
+        {
+            videoPopup.OpenAndPlay(currentStep.VideoUrl);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // 3. 画面表示の更新ロジック
+    // ---------------------------------------------------------
     private void UpdateDisplay()
     {
+        if (steps.Count == 0) return;
+
         StepData currentStep = steps[currentIndex];
 
-        // テキストの更新
-        instructionText.text = currentStep.instruction;
+        // テキスト更新
+        instructionText.text = currentStep.Instruction;
         
-        // カウンターの更新 (例: 1 / 5)
+        // カウンター更新
         if (counterText != null)
         {
             counterText.text = $"{currentIndex + 1} / {steps.Count}";
         }
 
-        // 🚨 ここに将来的に「ハイライト機能」や「動画再生」を追加します
+        // 🚨 動画ボタンの表示制御
+        // URLがある場合だけボタンを表示する
+        if (watchVideoButton != null)
+        {
+            bool hasVideo = !string.IsNullOrEmpty(currentStep.VideoUrl);
+            watchVideoButton.SetActive(hasVideo);
+        }
+
+        // （将来的にここに調味料ハイライトの呼び出しを追加可能）
         // if (!string.IsNullOrEmpty(currentStep.SpiceID)) { ... }
-        
-        Debug.Log($"ステップ {currentIndex + 1}: {currentStep.instruction}");
+
+        Debug.Log($"Displaying Step {currentIndex + 1}");
     }
 }
