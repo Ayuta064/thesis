@@ -5,10 +5,13 @@ using TMPro;
 public class Timeractivator : MonoBehaviour
 {
     [Header("Timer Duration")]
-    [Tooltip("タイマーの初期設定時間 (分)")]
-    public int timerMinutes = 1;
-    public int minMinutes = 1;
-    public int maxMinutes = 60;
+    [Tooltip("起動時の初期設定時間 (分)")]
+    public int defaultMinutes = 1; 
+    
+    [Tooltip("設定可能な最小時間 (秒)")]
+    public int minSeconds = 30;
+    [Tooltip("設定可能な最大時間 (秒)")]
+    public int maxSeconds = 3600; // 60分
 
     [Tooltip("残り時間を表示するためのTextMeshProコンポーネント")]
     public TextMeshPro timerTextDisplay;
@@ -16,27 +19,31 @@ public class Timeractivator : MonoBehaviour
     [Header("Alarm Settings")]
     public AudioSource audioSource;
     public AudioClip alarmSound;
-    public Color flashColor = Color.red;
-    public float flashDuration = 3f;
-    public float flashInterval = 0.2f;
+    public Color endColor = Color.red;     // 終了時の文字色
+    public float flashInterval = 0.5f;     // 点滅の間隔
 
-    // 状態管理フラグ
+    // 内部状態変数
+    private int setupSeconds = 60;         // 現在セットされている設定時間（秒）
+    private int currentRemainingSeconds = 0; // 動作中の残り時間（秒）
+
+    // 状態フラグ
     private bool isTimerRunning = false;
     private bool isAlarming = false;
-    private int currentRemainingSeconds = 0;
 
     void Start()
     {
-        // 🚨 修正: ゲーム開始時から時間を表示しておく
+        // 初期時間を設定（分→秒変換）
+        setupSeconds = defaultMinutes * 60;
+
         if (timerTextDisplay != null)
         {
-            timerTextDisplay.gameObject.SetActive(true); // trueに変更
-            UpdateSetTimeDisplay(); // 初期時間（01:00など）を表示
+            timerTextDisplay.gameObject.SetActive(true);
+            UpdateSetTimeDisplay(); // 初期表示 (例: 01:00)
         }
     }
 
     /// <summary>
-    /// スタート・一時停止・再開・アラーム停止を制御するメインメソッド
+    /// スタート・一時停止・再開・アラーム停止を制御するボタン用メソッド
     /// </summary>
     public void StartTimer()
     {
@@ -52,21 +59,21 @@ public class Timeractivator : MonoBehaviour
         {
             StopAllCoroutines();
             isTimerRunning = false;
-            Debug.Log($"⏸️ タイマーを一時停止しました。残り: {currentRemainingSeconds}秒");
+            Debug.Log($"⏸️ タイマー一時停止: 残り {currentRemainingSeconds}秒");
             return;
         }
 
-        // 3. タイマーが止まっている場合（初回または一時停止中）
+        // 3. タイマー停止中（初回または一時停止中）ならスタート
         
-        // 残り時間がなければ（0または初期状態）、設定時間からセットする
+        // 残り時間がなければ、セットされた時間から開始
         if (currentRemainingSeconds <= 0)
         {
-            currentRemainingSeconds = timerMinutes * 60;
-            Debug.Log($"▶️ タイマーを新規スタート: {timerMinutes}分");
+            currentRemainingSeconds = setupSeconds;
+            Debug.Log($"▶️ タイマー新規スタート: {setupSeconds}秒");
         }
         else
         {
-            Debug.Log($"▶️ タイマーを再開: 残り {currentRemainingSeconds}秒");
+            Debug.Log($"▶️ タイマー再開: 残り {currentRemainingSeconds}秒");
         }
 
         StartCoroutine(RunTimer());
@@ -77,40 +84,80 @@ public class Timeractivator : MonoBehaviour
         StopAllCoroutines();
         isTimerRunning = false;
         isAlarming = false;
-        currentRemainingSeconds = 0;
+        currentRemainingSeconds = 0; // 残り時間をクリア
 
-        if (audioSource != null && audioSource.isPlaying)
+        // 音を止める
+        if (audioSource != null)
         {
             audioSource.Stop();
         }
 
-        // 🚨 修正: リセットしても非表示にせず、初期時間に戻して表示し続ける
+        // 表示をリセット（セットされている時間に戻す）
         if (timerTextDisplay != null)
         {
-            timerTextDisplay.color = Color.white;
-            timerTextDisplay.gameObject.SetActive(true); // trueのまま
-            UpdateSetTimeDisplay(); // "01:00" に戻す
+            timerTextDisplay.gameObject.SetActive(true);
+            timerTextDisplay.color = Color.white; // 色を白に戻す
+            timerTextDisplay.enabled = true;      // 点滅で消えている可能性があるので表示
+            UpdateSetTimeDisplay();               // "01:30" などの表示に戻す
         }
 
         Debug.Log("🔄 タイマーをリセットしました。");
     }
 
-    public void IncreaseMinutes()
+    /// <summary>
+    /// ★修正: 設定時間を30秒増やす（起動中なら残り時間もそのまま増やす）
+    /// </summary>
+    public void IncreaseTime()
     {
-        if (timerMinutes < maxMinutes)
+        // 1. まず設定時間（ベース）を増やす
+        if (setupSeconds + 30 <= maxSeconds)
         {
-            timerMinutes++;
-            currentRemainingSeconds = 0; // 設定変更時はリセット
+            setupSeconds += 30;
+        }
+
+        // 2. 状況によって処理を分ける
+        if (isTimerRunning)
+        {
+            // 起動中なら、今の残りカウントにそのまま30秒足す
+            currentRemainingSeconds += 30;
+            UpdateTimerDisplay(currentRemainingSeconds); // 即座に画面更新
+            Debug.Log($"⏳ 時間延長: 残り {currentRemainingSeconds}秒");
+        }
+        else
+        {
+            // 停止中ならリセット扱いでOK（次のスタートで新しい時間が使われる）
+            currentRemainingSeconds = 0; 
             UpdateSetTimeDisplay();
         }
     }
 
-    public void DecreaseMinutes()
+    /// <summary>
+    /// ★修正: 設定時間を30秒減らす（起動中なら残り時間もそのまま減らす）
+    /// </summary>
+    public void DecreaseTime()
     {
-        if (timerMinutes > minMinutes)
+        // 1. まず設定時間（ベース）を減らす
+        if (setupSeconds - 30 >= minSeconds)
         {
-            timerMinutes--;
-            currentRemainingSeconds = 0; // 設定変更時はリセット
+            setupSeconds -= 30;
+        }
+
+        // 2. 状況によって処理を分ける
+        if (isTimerRunning)
+        {
+            // 起動中なら、今の残りカウントから30秒引く
+            currentRemainingSeconds -= 30;
+
+            // もし引いた結果 0秒以下になったら、0で止める（次のループで終了処理に入る）
+            if (currentRemainingSeconds < 0) currentRemainingSeconds = 0;
+
+            UpdateTimerDisplay(currentRemainingSeconds); // 即座に画面更新
+            Debug.Log($"⏳ 時間短縮: 残り {currentRemainingSeconds}秒");
+        }
+        else
+        {
+            // 停止中
+            currentRemainingSeconds = 0;
             UpdateSetTimeDisplay();
         }
     }
@@ -119,41 +166,68 @@ public class Timeractivator : MonoBehaviour
     {
         isTimerRunning = true;
 
+        // カウントダウンループ
         while (currentRemainingSeconds > 0)
         {
-            UpdateTimerDisplay(currentRemainingSeconds);
+            UpdateTimerDisplay(currentRemainingSeconds); // 時間を表示更新
             yield return new WaitForSeconds(1f);
             currentRemainingSeconds--;
         }
 
+        // 0になった瞬間
         isTimerRunning = false;
         currentRemainingSeconds = 0;
-        UpdateTimerDisplay(0);
         
+        // 「終了」表示に変更
+        if (timerTextDisplay != null)
+        {
+            timerTextDisplay.text = "終了";
+            timerTextDisplay.color = endColor; // 赤くする
+        }
+
         Debug.Log("🔔 タイマー終了！");
         
-        // 🚨 修正: ここで非表示にする処理を削除しました
-        
+        // 点滅と音の演出を開始
         StartCoroutine(FlashAndPlaySound());
     }
 
-    // --- 以下、表示・アラーム・パネル制御系 ---
+    // --- 表示・演出系 ---
 
+    /// <summary>
+    /// セット中の時間（待機状態）を表示する
+    /// </summary>
     private void UpdateSetTimeDisplay()
     {
         if (timerTextDisplay != null)
         {
-            // 実行中以外でも更新するように条件を緩和
-            timerTextDisplay.text = $"{timerMinutes:D2}:00";
-            timerTextDisplay.gameObject.SetActive(true);
+            int m = setupSeconds / 60;
+            int s = setupSeconds % 60;
+            timerTextDisplay.text = $"{m:D2}:{s:D2}";
+            timerTextDisplay.color = Color.white; // 設定中は白
         }
     }
 
+    /// <summary>
+    /// カウントダウン中の時間を表示する
+    /// </summary>
+    private void UpdateTimerDisplay(int seconds)
+    {
+        if (timerTextDisplay == null) return;
+
+        int m = seconds / 60;
+        int s = seconds % 60;
+        timerTextDisplay.text = $"{m:D2}:{s:D2}";
+        timerTextDisplay.color = Color.white;
+    }
+
+    /// <summary>
+    /// 終了時の演出（音ループ＋文字点滅）
+    /// </summary>
     private IEnumerator FlashAndPlaySound()
     {
         isAlarming = true;
-        Color originalColor = timerTextDisplay.color;
 
+        // 音を再生（ループ設定）
         if (audioSource != null && alarmSound != null)
         {
             audioSource.clip = alarmSound;
@@ -161,58 +235,34 @@ public class Timeractivator : MonoBehaviour
             audioSource.Play();
         }
 
+        // 文字の点滅ループ（リセットされるまで無限）
         while (isAlarming)
         {
-            timerTextDisplay.color = flashColor;
+            if (timerTextDisplay != null)
+            {
+                // 表示・非表示を切り替えてチカチカさせる
+                timerTextDisplay.enabled = !timerTextDisplay.enabled;
+            }
             yield return new WaitForSeconds(flashInterval);
-            timerTextDisplay.color = originalColor;
-            yield return new WaitForSeconds(flashInterval);
-        }
-        
-        if (audioSource != null) audioSource.Stop();
-        // ここでの色戻しはResetTimerで行うので省略可
-    }
-
-    private void UpdateTimerDisplay(int seconds)
-    {
-        if (timerTextDisplay == null) return;
-
-        int minutes = seconds / 60;
-        int displaySeconds = seconds % 60;
-        timerTextDisplay.text = string.Format("{0:00}:{1:00}", minutes, displaySeconds);
-
-        if (seconds == 0)
-        {
-            timerTextDisplay.color = Color.red;
-            timerTextDisplay.text = "終了";
-        }
-        else
-        {
-            timerTextDisplay.color = Color.white;
         }
     }
 
-    // パネル自体の表示切替（音声コマンド用）
+    // パネル表示切替（音声コマンド等用）
     public void TogglePanelVisibility()
     {
-        GameObject panelRoot = this.gameObject;
-        bool isVisible = !panelRoot.activeSelf;
-        panelRoot.SetActive(isVisible);
+        bool isVisible = !gameObject.activeSelf;
+        gameObject.SetActive(isVisible);
 
         if (isVisible)
         {
-            // パネルが出たときに現在の設定時間を表示
             UpdateSetTimeDisplay();
         }
         else
         {
-            // パネルを消すときはタイマーもリセットして止める
-            if (isTimerRunning || isAlarming)
-            {
-                 ResetTimer(); 
-            }
+            // パネルを消すときはタイマーを停止・リセットする
+            ResetTimer();
         }
     }
-    
+
     public void ForceRefresh(int value) { }
 }

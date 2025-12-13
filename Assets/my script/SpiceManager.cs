@@ -2,152 +2,109 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.XR.ARFoundation;
-using Microsoft.MixedReality.OpenXR;
+using Microsoft.MixedReality.OpenXR; 
 using Microsoft.MixedReality.OpenXR.ARSubsystems;
 
 public class SpiceManager : MonoBehaviour
 {
     [Header("Basic Settings")]
-    [Tooltip("Hierarchy 上の ARMarkerManager（1つだけ）")]
     public ARMarkerManager MarkerManager;
-
-    [Tooltip("調味料データ（QR文字列・ハイライト・状態）")]
     public List<SpiceData> seasoningList;
 
     [Header("Optional Settings")]
-    [Tooltip("指から対象へ向かうビームのPrefab（任意）")]
+    [Tooltip("指から出すビームのプレハブ (空欄ならビームなし)")]
     public GameObject BeamPrefab;
 
-    // 内部状態
     private GameObject activeBeamInstance;
     private BeamController activeBeamController;
 
-    // ★ 同じQRを二重処理しないためのガード
-    private HashSet<string> processedQRCodes = new HashSet<string>();
-
-    // ----------------------------------------------------------------
-    // Unity Lifecycle
-    // ----------------------------------------------------------------
-
     void Start()
     {
-        // Inspector未設定時の保険
-        if (MarkerManager == null)
+        if (MarkerManager == null) MarkerManager = FindObjectOfType<ARMarkerManager>();
+        
+        if (MarkerManager != null)
         {
-            MarkerManager = FindObjectOfType<ARMarkerManager>();
+            MarkerManager.markersChanged += OnARMarkersChanged;
         }
 
-        if (MarkerManager == null)
-        {
-            Debug.LogError("❌ ARMarkerManager が見つかりません。Hierarchy を確認してください。");
-            return;
-        }
-
-        // ★ markersChanged 購読
-        MarkerManager.markersChanged += OnARMarkersChanged;
-
-        // 初期状態：全ハイライトOFF
         TurnOffAllHighlights();
-
-        Debug.Log("🚀 SpiceManager 初期化完了");
     }
 
     void OnDestroy()
     {
-        if (MarkerManager != null)
-        {
-            MarkerManager.markersChanged -= OnARMarkersChanged;
-        }
+        if (MarkerManager != null) MarkerManager.markersChanged -= OnARMarkersChanged;
     }
 
     // ----------------------------------------------------------------
-    // 1. QRコード検出処理（★ added のみ使用）
+    // 1. QRコード検出処理
     // ----------------------------------------------------------------
-
     private void OnARMarkersChanged(ARMarkersChangedEventArgs args)
     {
-        // ★ updated / removed は絶対に触らない
-        foreach (var marker in args.added)
-        {
-            ProcessMarker(marker);
-        }
+        foreach (var marker in args.added) ProcessMarker(marker);
+        foreach (var marker in args.updated) ProcessMarker(marker);
     }
 
     private void ProcessMarker(ARMarker marker)
     {
-        string decodedText = marker.GetDecodedString();
+        string text = marker.GetDecodedString();
+        if (string.IsNullOrEmpty(text)) return;
 
-        if (string.IsNullOrEmpty(decodedText))
-            return;
+        SpiceData data = seasoningList.Find(d => d.QrCodeData == text);
 
-        // ★ 同一QRの二重処理防止
-        if (processedQRCodes.Contains(decodedText))
-            return;
-
-        processedQRCodes.Add(decodedText);
-
-        Debug.Log($"📸 QR検出: {decodedText}");
-
-        SpiceData data = seasoningList.Find(d => d.QrCodeData == decodedText);
-
-        if (data == null)
-        {
-            Debug.LogWarning($"⚠ 未登録QR: {decodedText}");
-            return;
-        }
-
-        if (!data.IsAnchorRegistered)
+        if (data != null && !data.IsAnchorRegistered)
         {
             RegisterAnchorForSpice(marker, data);
         }
     }
 
-    // ----------------------------------------------------------------
-    // 2. Anchor 登録処理
-    // ----------------------------------------------------------------
-
     private void RegisterAnchorForSpice(ARMarker marker, SpiceData data)
     {
-        // ① アンカー用の空オブジェクト作成
+        // 1. 空のアンカーオブジェクトを作る（これがQRの位置に固定される）
         GameObject anchorRoot = new GameObject($"Anchor_{data.SeasoningName}");
-        anchorRoot.transform.SetPositionAndRotation(
-            marker.transform.position,
-            marker.transform.rotation
-        );
-
-        // ② ARAnchor 付与（QRの位置を固定）
+        anchorRoot.transform.SetPositionAndRotation(marker.transform.position, marker.transform.rotation);
         anchorRoot.AddComponent<ARAnchor>();
 
-        // ③ ハイライトをアンカーの子に
         if (data.HighlightObject != null)
         {
+            // 2. ピン（HighlightObject）をアンカーの子にする
             data.HighlightObject.transform.SetParent(anchorRoot.transform, true);
+            
+            // 3. ローカル座標をリセット（これで親の位置＝QRの位置に来る）
+            // ※ピン自体のY座標などはピン側のInspectorで調整済みとする
             data.HighlightObject.transform.localPosition = Vector3.zero;
             data.HighlightObject.transform.localRotation = Quaternion.identity;
-
-            // 登録完了の視覚フィードバック
+            
+            // 4. 登録成功の合図（3秒ピカッ）
             StartCoroutine(FlashHighlight(data.HighlightObject, 3.0f));
         }
 
         data.IsAnchorRegistered = true;
+        Debug.Log($"✅ QR登録完了: {data.SeasoningName}");
 
-        Debug.Log($"✅ アンカー登録完了: {data.SeasoningName}");
-
-        // ★ 全調味料登録済みならQR認識停止
+        // ★追加: 全員揃ったかチェックして、揃っていたら認識を止める
         CheckAndStopMarkerDetection();
     }
 
     private void CheckAndStopMarkerDetection()
     {
+        bool allRegistered = true;
         foreach (var spice in seasoningList)
         {
             if (!spice.IsAnchorRegistered)
-                return;
+            {
+                allRegistered = false;
+                break;
+            }
         }
 
-        // 全部揃った
-        MarkerManager.enabled = false;
-        Debug.Log("🏁 全調味料登録完了。QR認識を停止しました。");
+        if (allRegistered)
+        {
+            if (MarkerManager != null)
+            {
+                MarkerManager.enabled = false;
+                Debug.Log("🏁 全調味料の登録完了。マーカー認識を停止します。");
+            }
+        }
     }
 
     private IEnumerator FlashHighlight(GameObject obj, float duration)
@@ -158,36 +115,39 @@ public class SpiceManager : MonoBehaviour
     }
 
     // ----------------------------------------------------------------
-    // 3. レシピ連携（外部から呼ばれる）
+    // 2. レシピ連携 & ビーム制御
     // ----------------------------------------------------------------
-
-    public void HighlightSeasoning(string seasoningName, bool show)
+    public void HighlightSeasoning(string requiredSeasoningName, bool show)
     {
-        SpiceData data = seasoningList.Find(d => d.SeasoningName == seasoningName);
+        SpiceData data = seasoningList.Find(d => d.SeasoningName == requiredSeasoningName);
 
+        // ▼ エラー診断 ▼
         if (data == null)
         {
-            Debug.LogError($"❌ '{seasoningName}' が seasoningList に存在しません");
+            Debug.LogError($"❌ エラー: '{requiredSeasoningName}' がリストにありません。Inspectorの名前を確認してください。");
             return;
         }
-
-        if (!data.IsAnchorRegistered)
-        {
-            Debug.LogWarning($"⚠ '{seasoningName}' はまだQR未登録です");
-            return;
-        }
-
         if (data.HighlightObject == null)
         {
-            Debug.LogError($"❌ '{seasoningName}' の HighlightObject が未設定です");
+            Debug.LogError($"❌ エラー: '{requiredSeasoningName}' のHighlight Objectが空です。");
+            return;
+        }
+        if (!data.IsAnchorRegistered)
+        {
+            Debug.LogWarning($"⚠️ 待機中: '{requiredSeasoningName}' のQRコードをまだ読んでいません。");
             return;
         }
 
-        data.HighlightObject.SetActive(show);
-
-        if (BeamPrefab != null)
+        // ▼ 表示処理 ▼
+        if (show)
         {
-            ControlBeam(data, show);
+            Debug.Log($"✨ ハイライトON: {requiredSeasoningName}");
+            data.HighlightObject.SetActive(true);
+            if (BeamPrefab != null) ControlBeam(data, true);
+        }
+        else
+        {
+            data.HighlightObject.SetActive(false);
         }
     }
 
@@ -197,11 +157,10 @@ public class SpiceManager : MonoBehaviour
         if (activeBeamInstance != null)
         {
             activeBeamInstance.SetActive(false);
-            if (activeBeamController != null)
-                activeBeamController.StopBeam();
+            if (activeBeamController != null) activeBeamController.StopBeam();
         }
 
-        // 全ハイライトOFF
+        // 全アイコン消灯
         foreach (var data in seasoningList)
         {
             if (data.HighlightObject != null)
@@ -220,10 +179,11 @@ public class SpiceManager : MonoBehaviour
                 activeBeamInstance = Instantiate(BeamPrefab);
                 activeBeamController = activeBeamInstance.GetComponent<BeamController>();
             }
-
+            
             if (activeBeamController != null)
             {
-                // ★ ピンそのものを狙う
+                // ★修正: 親(Anchor)ではなく、HighlightObjectそのものを狙う
+                // これでピンの位置に正確にビームが向かいます
                 activeBeamController.SetTarget(data.HighlightObject.transform);
                 activeBeamInstance.SetActive(true);
             }
@@ -233,8 +193,7 @@ public class SpiceManager : MonoBehaviour
             if (activeBeamInstance != null)
             {
                 activeBeamInstance.SetActive(false);
-                if (activeBeamController != null)
-                    activeBeamController.StopBeam();
+                if(activeBeamController != null) activeBeamController.StopBeam();
             }
         }
     }

@@ -220,14 +220,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758bce12ebb3b484485094f147594cc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timerMinutes: 1
-  minMinutes: 1
-  maxMinutes: 60
+  defaultMinutes: 1
+  minSeconds: 30
+  maxSeconds: 3600
   timerTextDisplay: {fileID: 265375922}
   audioSource: {fileID: 1166011673}
   alarmSound: {fileID: 8300000, guid: 3d55a6a7f0e4f0d4aa9e18e3ce1e7451, type: 3}
-  flashColor: {r: 1, g: 0, b: 0, a: 1}
-  flashDuration: 3
+  endColor: {r: 1, g: 0, b: 0, a: 1}
   flashInterval: 0.2
 --- !u!1 &260175442
 GameObject:
@@ -544,7 +543,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5572466351762964349, guid: c25d8f2d22117bd40ad824684551fbde, type: 3}
       propertyPath: <OnClicked>k__BackingField.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: DecreaseMinutes
+      value: DecreaseTime
       objectReference: {fileID: 0}
     - target: {fileID: 5572466351762964349, guid: c25d8f2d22117bd40ad824684551fbde, type: 3}
       propertyPath: <OnClicked>k__BackingField.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -1803,6 +1802,7 @@ GameObject:
   - component: {fileID: 1017940582}
   - component: {fileID: 1017940585}
   - component: {fileID: 1017940586}
+  - component: {fileID: 1017940587}
   m_Layer: 0
   m_Name: Timer group
   m_TagString: Untagged
@@ -1859,14 +1859,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758bce12ebb3b484485094f147594cc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timerMinutes: 1
-  minMinutes: 1
-  maxMinutes: 60
+  defaultMinutes: 1
+  minSeconds: 30
+  maxSeconds: 3600
   timerTextDisplay: {fileID: 265375922}
-  audioSource: {fileID: 0}
+  audioSource: {fileID: 1017940587}
   alarmSound: {fileID: 8300000, guid: 3d55a6a7f0e4f0d4aa9e18e3ce1e7451, type: 3}
-  flashColor: {r: 1, g: 0, b: 0, a: 1}
-  flashDuration: 3
+  endColor: {r: 1, g: 0, b: 0, a: 1}
   flashInterval: 0.2
 --- !u!114 &1017940586
 MonoBehaviour:
@@ -1888,57 +1887,106 @@ MonoBehaviour:
   smoothing: 1
   lifetime: 0
   orientationType: 5
-  localOffset: {x: -0.07, y: -0.1, z: 0.4}
+  localOffset: {x: -0.07, y: -0.5, z: 0.4}
   worldOffset: {x: 0, y: 0, z: 0}
   useAngleStepping: 0
   tetherAngleSteps: 6
---- !u!1 &1097309885
-GameObject:
+--- !u!82 &1017940587
+AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1097309887}
-  - component: {fileID: 1097309888}
-  m_Layer: 0
-  m_Name: Highright object
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1097309887
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1097309885}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.24949127, y: -0.023285905, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 9
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1097309888
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1097309885}
+  m_GameObject: {fileID: 1017940580}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4bd3d1f99f4c5c14eb2adc0d55710362, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  floatSpeed: 2
-  floatHeight: 0.05
-  rotateSpeed: 50
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 3d55a6a7f0e4f0d4aa9e18e3ce1e7451, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1102590924 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2351505567455720334, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
@@ -1979,7 +2027,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1102590924}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0cb9aa70a22847b5925ee5f067c10a9, type: 3}
   m_Name: 
@@ -2916,7 +2964,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1960850289780299974, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1960850291408215591, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: m_RootOrder
@@ -3104,7 +3152,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6922232475604193032, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: <OnClicked>k__BackingField.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: IncreaseMinutes
+      value: IncreaseTime
       objectReference: {fileID: 0}
     - target: {fileID: 6922232475604193032, guid: 180d4d2203473be4fa3fef18d0bec80e, type: 3}
       propertyPath: <OnClicked>k__BackingField.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -3280,7 +3328,7 @@ MonoBehaviour:
   smoothing: 1
   lifetime: 0
   orientationType: 1
-  localOffset: {x: 0, y: -0.06, z: 0.6}
+  localOffset: {x: 0, y: -0.06, z: 0.4}
   worldOffset: {x: 0, y: 0, z: 0}
   useAngleStepping: 0
   tetherAngleSteps: 6
@@ -3322,14 +3370,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758bce12ebb3b484485094f147594cc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timerMinutes: 1
-  minMinutes: 1
-  maxMinutes: 60
+  defaultMinutes: 1
+  minSeconds: 30
+  maxSeconds: 3600
   timerTextDisplay: {fileID: 265375922}
   audioSource: {fileID: 0}
   alarmSound: {fileID: 0}
-  flashColor: {r: 1, g: 0, b: 0, a: 1}
-  flashDuration: 3
+  endColor: {r: 1, g: 0, b: 0, a: 1}
   flashInterval: 0.2
 --- !u!1 &1983911151
 GameObject:
@@ -3475,7 +3522,7 @@ Transform:
   - {fileID: 1983911152}
   - {fileID: 2014004613}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2014004612
 GameObject:
@@ -3766,10 +3813,18 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108628, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: -2933694883930561160, guid: 2563cbd4819a8364d9004d8bfcb9fdfe, type: 2}
     - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_fontSize
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2563cbd4819a8364d9004d8bfcb9fdfe, type: 2}
     - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_fontColor.a
       value: 1
@@ -3791,8 +3846,16 @@ PrefabInstance:
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -2933694883930561160, guid: 2563cbd4819a8364d9004d8bfcb9fdfe, type: 2}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 4294243583
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145717094914108629, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8145717094914108630, guid: 19ee1bc6426559043993787ce0bc791a, type: 3}
       propertyPath: m_Name
